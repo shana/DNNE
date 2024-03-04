@@ -6,3 +6,5 @@
 **/launchSettings.json
 
 test/build/
+.idea/
+

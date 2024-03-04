@@ -17,14 +17,14 @@
 
   <PropertyGroup>
     <PackageId>DNNE</PackageId>
-    <Version>2.0.6</Version>
-    <Authors>AaronRobinsonMSFT</Authors>
-    <Owners>AaronRobinsonMSFT</Owners>
+    <Version>2.0.6.1</Version>
+    <Authors>AaronRobinsonMSFT, Andreia Gaita</Authors>
+    <Owners>shana</Owners>
     <Description>Package used to generated native exports for .NET assemblies.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/AaronRobinsonMSFT/DNNE</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/shana/DNNE</PackageProjectUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/AaronRobinsonMSFT/DNNE</RepositoryUrl>
+    <RepositoryUrl>https://github.com/shana/DNNE</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>pinvoke interop unmanagedcallersonly exports</PackageTags>
     <IsTool>True</IsTool>
