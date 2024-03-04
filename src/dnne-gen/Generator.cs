@@ -96,6 +96,7 @@ namespace DNNE
         {
             var additionalCodeStatements = new List<string>();
             var exportedMethods = new List<ExportedMethod>();
+            var exportedTypes = new Dictionary<string, string>();
             foreach (var methodDefHandle in this.mdReader.MethodDefinitions)
             {
                 MethodDefinition methodDef = this.mdReader.GetMethodDefinition(methodDefHandle);
@@ -219,7 +220,7 @@ namespace DNNE
                 MethodSignature<string> signature;
                 try
                 {
-                    var typeProvider = new C99TypeProvider();
+                    var typeProvider = new C99TypeProvider(exportedTypes);
 
                     signature = methodDef.DecodeSignature(typeProvider, null);
 
@@ -308,7 +309,7 @@ namespace DNNE
             }
 
             string assemblyName = this.mdReader.GetString(this.mdReader.GetAssemblyDefinition().Name);
-            EmitC99(outputStream, assemblyName, exportedMethods, additionalCodeStatements);
+            EmitC99(outputStream, assemblyName, exportedMethods, exportedTypes.Values, additionalCodeStatements);
         }
 
         private static Dictionary<string, string> LoadXmlDocumentation(string xmlDocumentation)
@@ -562,7 +563,8 @@ namespace DNNE
 
         private const string SafeMacroRegEx = "[^a-zA-Z0-9_]";
 
-        private static void EmitC99(TextWriter outputStream, string assemblyName, IEnumerable<ExportedMethod> exports, IEnumerable<string> additionalCodeStatements)
+        private static void EmitC99(TextWriter outputStream, string assemblyName,
+            IEnumerable<ExportedMethod> exports, IEnumerable<string> exportedTypes, IEnumerable<string> additionalCodeStatements)
         {
             // Convert the assembly name into a supported string for C99 macros.
             var assemblyNameMacroSafe = Regex.Replace(assemblyName, SafeMacroRegEx, "_");
@@ -612,11 +614,10 @@ $@"//
             var implStream = new StringWriter();
 
             // Emit definition preamble
-            implStream.WriteLine(
+            outputStream.WriteLine(
 $@"//
 // Define exported functions
 //
-#ifdef {compileAsSourceDefine}
 
 #ifdef DNNE_WINDOWS
     #ifdef _WCHAR_T_DEFINED
@@ -628,6 +629,16 @@ $@"//
     typedef char char_t;
 #endif
 
+");
+
+            foreach (var e in exportedTypes)
+            {
+                outputStream.WriteLine(e);
+            }
+
+            implStream.WriteLine($"#ifdef {compileAsSourceDefine}");
+
+            implStream.WriteLine($@"
 //
 // Forward declarations
 //
@@ -640,7 +651,9 @@ extern void* get_callable_managed_function(
 extern void* get_fast_callable_managed_function(
     const char_t* dotnet_type,
     const char_t* dotnet_type_method);
+
 ");
+
 
             // Emit string table
             implStream.WriteLine(
@@ -980,6 +993,13 @@ $@"#endif // {generatedHeaderDefine}
 
         private class C99TypeProvider : ISignatureTypeProvider<string, UnusedGenericContext>
         {
+            private Dictionary<string, string> exportedTypes;
+
+            public C99TypeProvider(Dictionary<string, string> exportedTypes)
+            {
+                this.exportedTypes = exportedTypes;
+            }
+
             PrimitiveTypeCode? lastUnsupportedPrimitiveType;
 
             public string GetArrayType(string elementType, ArrayShape shape)
@@ -1092,6 +1112,29 @@ $@"#endif // {generatedHeaderDefine}
 
             public string GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind)
             {
+                const byte ELEMENT_TYPE_VALUETYPE = 0x11;
+                if (rawTypeKind == ELEMENT_TYPE_VALUETYPE)
+                {
+                    var t = reader.GetTypeDefinition(handle);
+                    var typename = reader.GetString(t.Name);
+                    if (!exportedTypes.ContainsKey(typename))
+                    {
+                        var sb = new StringBuilder();
+                        sb.AppendLine($"typedef struct {typename} {{");
+                        foreach (var field in t.GetFields())
+                        {
+                            var f = reader.GetFieldDefinition(field);
+                            var name = reader.GetString(f.Name);
+                            var sig = f.DecodeSignature(this, new UnusedGenericContext());
+                            sb.AppendLine($"{sig} {name};");
+                        }
+                        sb.AppendLine($"}} {typename};");
+                        exportedTypes.Add(typename, sb.ToString());
+                    }
+
+
+                    return $"const {typename}";
+                }
                 return SupportNonPrimitiveTypes(rawTypeKind);
             }
 
