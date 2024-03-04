@@ -101,7 +101,7 @@ namespace DNNE
                 MethodDefinition methodDef = this.mdReader.GetMethodDefinition(methodDefHandle);
 
                 // Only check public static functions
-                if (!methodDef.Attributes.HasFlag(MethodAttributes.Public | MethodAttributes.Static))
+                if (!methodDef.Attributes.HasFlag(MethodAttributes.Static))
                 {
                     continue;
                 }
