@@ -454,6 +454,10 @@ static int load_hostfxr(const char_t* assembly_path)
 // Globals to hold runtime exports
 static load_assembly_and_get_function_pointer_fn volatile get_managed_export_fptr;
 
+#if !defined(pinvoke_override_ptr)
+    char_t* pinvoke_override_ptr;
+#endif
+
 static int init_dotnet(const char_t* assembly_path)
 {
     const char_t* config_path = NULL;

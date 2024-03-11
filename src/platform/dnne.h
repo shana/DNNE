@@ -126,10 +126,10 @@ extern DNNE_API void dnne_abort(enum failure_type type, int error_code);
 
 extern DNNE_API void* DNNE_CALLTYPE pinvoke_override(const char *libraryName, const char *entrypointName);
 
+extern char_t* pinvoke_override_ptr;
+
 #ifdef __cplusplus
     }
 #endif
-
-DNNE_EXTERN_C char_t* pinvoke_override_ptr;
 
 #endif // __SRC_PLATFORM_DNNE_H__
