@@ -424,6 +424,7 @@ static hostfxr_initialize_for_dotnet_command_line_fn init_self_contained_fptr;
 static hostfxr_initialize_for_runtime_config_fn init_fptr;
 static hostfxr_get_runtime_delegate_fn get_delegate_fptr;
 static hostfxr_close_fn close_fptr;
+static hostfxr_set_runtime_property_value_fn set_runtime_property_value_fptr;
 
 static int load_hostfxr(const char_t* assembly_path)
 {
@@ -444,6 +445,7 @@ static int load_hostfxr(const char_t* assembly_path)
     init_fptr = (hostfxr_initialize_for_runtime_config_fn)get_export(lib, "hostfxr_initialize_for_runtime_config");
     get_delegate_fptr = (hostfxr_get_runtime_delegate_fn)get_export(lib, "hostfxr_get_runtime_delegate");
     close_fptr = (hostfxr_close_fn)get_export(lib, "hostfxr_close");
+    set_runtime_property_value_fptr = (hostfxr_set_runtime_property_value_fn)get_export(lib, "hostfxr_set_runtime_property_value");
 
     assert(init_self_contained_fptr && init_fptr && get_delegate_fptr && close_fptr);
     return DNNE_SUCCESS;
@@ -484,6 +486,8 @@ static int init_dotnet(const char_t* assembly_path)
         close_fptr(cxt);
         return rc;
     }
+
+    set_runtime_property_value_fptr(cxt, L"PINVOKE_OVERRIDE", pinvoke_override_ptr);
 
     // Get the load assembly function pointer
     rc = get_delegate_fptr(
