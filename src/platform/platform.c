@@ -487,7 +487,9 @@ static int init_dotnet(const char_t* assembly_path)
         return rc;
     }
 
-    set_runtime_property_value_fptr(cxt, L"PINVOKE_OVERRIDE", pinvoke_override_ptr);
+    if (pinvoke_override_ptr) {
+        set_runtime_property_value_fptr(cxt, DNNE_STR("PINVOKE_OVERRIDE"), pinvoke_override_ptr);
+    }
 
     // Get the load assembly function pointer
     rc = get_delegate_fptr(

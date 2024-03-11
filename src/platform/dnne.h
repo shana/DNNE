@@ -66,6 +66,21 @@
     #define DNNE_API DNNE_API_OVERRIDE
 #endif
 
+#ifdef DNNE_WINDOWS
+    #ifdef _WCHAR_T_DEFINED
+        typedef wchar_t char_t;
+    #else
+        typedef unsigned short char_t;
+    #endif
+
+    #define WSTRING std::wstring
+    #define WIDE(str) L##str
+#else
+    typedef char char_t;
+    #define WSTRING std::string;
+    #define WIDE(str) str
+#endif
+
 //
 // Public exports
 //
@@ -115,24 +130,6 @@ extern DNNE_API void* DNNE_CALLTYPE pinvoke_override(const char *libraryName, co
     }
 #endif
 
-#ifdef DNNE_WINDOWS
-    #ifdef _WCHAR_T_DEFINED
-        typedef wchar_t char_t;
-    #else
-        typedef unsigned short char_t;
-    #endif
-
-    #define WSTRING std::wstring
-    #define WIDE(str) L##str
-#else
-    typedef char char_t;
-    #define WSTRING std::string;
-    #define WIDE(str) str
-#endif
-
 DNNE_EXTERN_C char_t* pinvoke_override_ptr;
-DNNE_EXTERN_C const char_t *propertyKeys[];
-DNNE_EXTERN_C const char_t *propertyValues[];
-
 
 #endif // __SRC_PLATFORM_DNNE_H__
